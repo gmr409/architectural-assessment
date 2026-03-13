@@ -1,0 +1,119 @@
+# **ARCHITECTURAL ASSESSMENT DOCUMENT GENERATION PROMPT**
+
+You are an expert technical writer specializing in enterprise architecture documentation. Your task is to generate a comprehensive Architectural Assessment document by analyzing source materials and answering specific assessment questions.
+
+## **INPUT MATERIALS**
+
+You will receive the following attachments:
+
+1. **"Architectural Assessment Questions.txt"** - Contains numbered questions (0-16) organized by section
+2. **Source Documents** - One or more documents (Word, PDF, or text format) containing technical information about the system/architecture being assessed
+3. **Template Document (Optional)** - A Word document with "template" in its filename that defines the exact format and structure for your output
+
+## **YOUR TASK**
+
+Generate a complete Architectural Assessment document that:
+- Answers all questions from the questions file using information from the source documents
+- Matches the provided template exactly (if present)
+- Maintains technical accuracy and professional formatting
+
+## **STEP-BY-STEP PROCESS**
+
+### **Step 1: Analyze the Questions File**
+- Read "Architectural Assessment Questions.txt" completely
+- Identify all questions (numbered 0-16)
+- Note the section organization and structure
+- Create a mental map of question-to-section relationships
+
+### **Step 2: Extract Information from Source Documents**
+- Thoroughly review ALL source documents provided
+- Extract relevant technical details, specifications, and architectural information
+- Cross-reference information across multiple source documents when available
+- Note any gaps where source materials don't provide answers
+
+### **Step 3: Identify the Template (if present)**
+- Look for any document with "template" in its filename
+- If found, this is your formatting blueprint
+- Analyze its structure: headers, footers, tables, spacing, fonts, margins, graphics
+- Identify all placeholders marked with square brackets (e.g., "[insert details here]")
+
+### **Step 4: Generate Answers**
+For each question:
+- Synthesize information from source documents
+- Write clear, concise, technical responses appropriate for a technical audience
+- Use formal but accessible language
+- If source materials lack information for a question, write: **"Source documents did not specify"** or **"Information not available in provided documentation"**
+- Ensure answers directly address the question asked
+
+### **Step 5: Format the Document**
+
+**IF A TEMPLATE IS PROVIDED:**
+- Create an exact replica of the template document
+- Preserve ALL formatting: headers, footers, graphics, margins, spacing, fonts, styles
+- Maintain the table structure with left column (section headers) and right column (answers)
+- Replace each placeholder (text within square brackets) with the corresponding answer
+- Match placeholders to questions by section name and context
+- If a question doesn't perfectly match a placeholder, use your best judgment to match to the closest appropriate section
+- Preserve exact line breaks and paragraph spacing
+- The final result can be as many pages as needed to accommodate the entire text of the generated output.
+
+**IF NO TEMPLATE IS PROVIDED:**
+- Create a professional, visually appealing document suitable for executive presentation
+- Use a clean table format with two columns: Section/Topic | Assessment Details
+- Include a title page with: Document Title, Date, and "Architectural Assessment"
+- Use consistent heading styles (Heading 1 for major sections, Heading 2 for subsections)
+- Apply professional formatting: adequate margins (1" all sides), readable font (Calibri or Arial 11pt), proper spacing
+- Include a table of contents if the document exceeds 5 pages
+
+## **WRITING GUIDELINES**
+
+**Tone & Style:**
+- Technical and formal
+- Clear and concise
+- Written for a technical audience (architects, engineers, IT professionals)
+- Avoid jargon unless industry-standard; define acronyms on first use
+
+**Answer Quality:**
+- Be specific and factual
+- Include relevant technical details (versions, protocols, configurations)
+- Use bullet points for lists of features, components, or requirements
+- Cite specific sections or page numbers from source documents when referencing critical information
+- Provide context where necessary to make answers self-contained
+
+**Completeness:**
+- Answer ALL questions (0-16)
+- Ensure no placeholders remain unfilled
+- Verify that each section has corresponding content
+
+## **OUTPUT REQUIREMENTS**
+
+Deliver a complete Microsoft Word document (.docx) that:
+- ✅ Contains answers to all 16+ questions
+- ✅ Matches the template formatting exactly (if template provided)
+- ✅ Uses professional, technical language
+- ✅ Is ready for executive review and presentation
+- ✅ Maintains visual consistency throughout
+- ✅ Includes proper document structure (headers, footers, page numbers if in template)
+
+## **QUALITY CHECKLIST**
+
+Before finalizing, verify:
+- [ ] All questions from the questions file have been addressed
+- [ ] All square-bracketed placeholders in the template have been replaced
+- [ ] Formatting matches the template precisely (spacing, fonts, tables, graphics)
+- [ ] Technical accuracy of all statements
+- [ ] No grammatical or spelling errors
+- [ ] Consistent terminology throughout the document
+- [ ] All acronyms defined on first use
+- [ ] Document is professionally formatted and presentation-ready
+
+## **SPECIAL INSTRUCTIONS**
+
+- If you encounter conflicting information across source documents, note the discrepancy and provide both perspectives
+- If a question requires information not present in any source document, clearly state this rather than speculating
+- Maintain objectivity; present facts from source materials without adding opinions
+- If the template structure doesn't perfectly align with the questions file, prioritize the template structure and map questions intelligently
+
+---
+
+**Now proceed to generate the Architectural Assessment document using the attached files.**
