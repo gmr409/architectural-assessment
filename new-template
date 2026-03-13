@@ -1,0 +1,576 @@
+const {
+  Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
+  AlignmentType, BorderStyle, WidthType, ShadingType, VerticalAlign,
+  HeadingLevel, Header, Footer, LevelFormat
+} = require('docx');
+const fs = require('fs');
+
+const TODAY = "March 13, 2025";
+
+// Color palette
+const DARK_BLUE = "1F3864";
+const MID_BLUE = "2E75B6";
+const LIGHT_BLUE = "D6E4F0";
+const HEADER_BG = "1F3864";
+const ALT_ROW = "EBF3FA";
+const WHITE = "FFFFFF";
+const LIGHT_GRAY = "F2F2F2";
+const GREEN = "375623";
+const GREEN_BG = "E2EFDA";
+
+const border = { style: BorderStyle.SINGLE, size: 4, color: "CCCCCC" };
+const borders = { top: border, bottom: border, left: border, right: border };
+const noBorder = { style: BorderStyle.NONE, size: 0, color: "FFFFFF" };
+const noBorders = { top: noBorder, bottom: noBorder, left: noBorder, right: noBorder };
+
+function hCell(text, width, shade = HEADER_BG) {
+  return new TableCell({
+    borders,
+    width: { size: width, type: WidthType.DXA },
+    shading: { fill: shade, type: ShadingType.CLEAR },
+    margins: { top: 80, bottom: 80, left: 160, right: 120 },
+    verticalAlign: VerticalAlign.CENTER,
+    children: [new Paragraph({
+      children: [new TextRun({ text, bold: true, color: WHITE, size: 20, font: "Arial" })]
+    })]
+  });
+}
+
+function labelCell(text, width, shade = LIGHT_BLUE) {
+  return new TableCell({
+    borders,
+    width: { size: width, type: WidthType.DXA },
+    shading: { fill: shade, type: ShadingType.CLEAR },
+    margins: { top: 80, bottom: 80, left: 160, right: 120 },
+    verticalAlign: VerticalAlign.CENTER,
+    children: [new Paragraph({
+      children: [new TextRun({ text, bold: true, size: 20, font: "Arial", color: "1F3864" })]
+    })]
+  });
+}
+
+function valueCell(children, width, shade = WHITE) {
+  return new TableCell({
+    borders,
+    width: { size: width, type: WidthType.DXA },
+    shading: { fill: shade, type: ShadingType.CLEAR },
+    margins: { top: 80, bottom: 80, left: 160, right: 120 },
+    children: Array.isArray(children) ? children : [new Paragraph({
+      children: [new TextRun({ text: children, size: 20, font: "Arial" })]
+    })]
+  });
+}
+
+function textP(text, opts = {}) {
+  return new Paragraph({
+    children: [new TextRun({ text, size: 20, font: "Arial", ...opts })]
+  });
+}
+
+function bulletP(text) {
+  return new Paragraph({
+    numbering: { reference: "bullets", level: 0 },
+    children: [new TextRun({ text, size: 20, font: "Arial" })]
+  });
+}
+
+function sectionHeaderRow(title, totalWidth) {
+  return new TableRow({
+    children: [new TableCell({
+      borders,
+      columnSpan: 2,
+      width: { size: totalWidth, type: WidthType.DXA },
+      shading: { fill: MID_BLUE, type: ShadingType.CLEAR },
+      margins: { top: 100, bottom: 100, left: 160, right: 120 },
+      children: [new Paragraph({
+        children: [new TextRun({ text: title, bold: true, color: WHITE, size: 22, font: "Arial" })]
+      })]
+    })]
+  });
+}
+
+function row2(label, valueParagraphs, shade = WHITE) {
+  return new TableRow({
+    children: [
+      labelCell(label, 2800),
+      valueCell(valueParagraphs, 6560, shade)
+    ]
+  });
+}
+
+function vp(text) {
+  return new Paragraph({ children: [new TextRun({ text, size: 20, font: "Arial" })] });
+}
+
+function vbp(text) {
+  return new Paragraph({
+    numbering: { reference: "bullets", level: 0 },
+    children: [new TextRun({ text, size: 20, font: "Arial" })]
+  });
+}
+
+// Recommendation cell (green)
+function recCell(text) {
+  return new TableCell({
+    borders,
+    width: { size: 6560, type: WidthType.DXA },
+    shading: { fill: GREEN_BG, type: ShadingType.CLEAR },
+    margins: { top: 100, bottom: 100, left: 160, right: 120 },
+    children: [new Paragraph({
+      children: [new TextRun({ text, bold: true, size: 22, font: "Arial", color: GREEN })]
+    })]
+  });
+}
+
+const doc = new Document({
+  numbering: {
+    config: [
+      {
+        reference: "bullets",
+        levels: [{
+          level: 0, format: LevelFormat.BULLET, text: "\u2022", alignment: AlignmentType.LEFT,
+          style: { paragraph: { indent: { left: 600, hanging: 300 } } }
+        }]
+      }
+    ]
+  },
+  styles: {
+    default: { document: { run: { font: "Arial", size: 20 } } },
+    paragraphStyles: [
+      {
+        id: "Heading1", name: "Heading 1", basedOn: "Normal", next: "Normal", quickFormat: true,
+        run: { size: 32, bold: true, font: "Arial", color: DARK_BLUE },
+        paragraph: { spacing: { before: 240, after: 120 }, outlineLevel: 0 }
+      },
+      {
+        id: "Heading2", name: "Heading 2", basedOn: "Normal", next: "Normal", quickFormat: true,
+        run: { size: 26, bold: true, font: "Arial", color: MID_BLUE },
+        paragraph: { spacing: { before: 180, after: 90 }, outlineLevel: 1 }
+      }
+    ]
+  },
+  sections: [{
+    properties: {
+      page: {
+        size: { width: 12240, height: 15840 },
+        margin: { top: 1080, right: 1080, bottom: 1080, left: 1080 }
+      }
+    },
+    headers: {
+      default: new Header({
+        children: [
+          new Paragraph({
+            border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: MID_BLUE } },
+            children: [
+              new TextRun({ text: "GCPS Enterprise Architecture Review Board", bold: true, size: 18, font: "Arial", color: DARK_BLUE }),
+              new TextRun({ text: "   |   Architectural Assessment", size: 18, font: "Arial", color: "666666" }),
+              new TextRun({ text: "   |   Content2Classroom", size: 18, font: "Arial", color: MID_BLUE, bold: true }),
+            ]
+          })
+        ]
+      })
+    },
+    footers: {
+      default: new Footer({
+        children: [
+          new Paragraph({
+            border: { top: { style: BorderStyle.SINGLE, size: 6, color: MID_BLUE } },
+            children: [
+              new TextRun({ text: "CONFIDENTIAL – For Internal Use Only  |  Gwinnett County Public Schools", size: 16, font: "Arial", color: "888888" }),
+            ]
+          })
+        ]
+      })
+    },
+    children: [
+
+      // === COVER TABLE ===
+      new Table({
+        width: { size: 9360, type: WidthType.DXA },
+        columnWidths: [2800, 6560],
+        rows: [
+          // Title spanning row
+          new TableRow({
+            children: [new TableCell({
+              borders,
+              columnSpan: 2,
+              width: { size: 9360, type: WidthType.DXA },
+              shading: { fill: HEADER_BG, type: ShadingType.CLEAR },
+              margins: { top: 180, bottom: 180, left: 200, right: 200 },
+              children: [
+                new Paragraph({
+                  alignment: AlignmentType.CENTER,
+                  children: [new TextRun({ text: "ARCHITECTURAL ASSESSMENT", bold: true, color: WHITE, size: 36, font: "Arial" })]
+                }),
+                new Paragraph({
+                  alignment: AlignmentType.CENTER,
+                  children: [new TextRun({ text: "Gwinnett County Public Schools – Enterprise Architecture Review Board", color: "BDD7EE", size: 20, font: "Arial" })]
+                })
+              ]
+            })]
+          }),
+          row2("Application / Service", [vp("Content2Classroom")]),
+          row2("Business Owner", [vp("Melissa Lord / Bob Chase")], ALT_ROW),
+          row2("ARB Request Date", [vp(TODAY)]),
+          row2("Role / Position", [vp("Coordinator / Director – Instructional Resources & Support")], ALT_ROW),
+          row2("Department / School", [vp("Instructional Resources & Support – Teaching & Learning (ISC)")]),
+          row2("Contact Email", [vp("melissa.lord@gcpsk12.org / bob.chase@gcpsk12.org")], ALT_ROW),
+          row2("Contact Phone", [vp("Source documents did not specify")]),
+          row2("Documents Reviewed", [
+            vbp("ARB Business Owner Questionnaire"),
+            vbp("Simplified SaaS Vendor Questionnaire")
+          ], ALT_ROW),
+          row2("Enterprise Architect", [vp("Michael Rogers")]),
+          row2("Vendor", [vp("Gibbs Smith Education  |  1706 N 1200 W, Unit #2100, Layton, UT 84041")], ALT_ROW),
+          row2("Intended Go-Live Date", [vp("July 1, 2026")]),
+        ]
+      }),
+
+      new Paragraph({ children: [new TextRun({ text: "" })] }),
+      new Paragraph({ children: [new TextRun({ text: "" })] }),
+
+      // === RECOMMENDATION ===
+      new Table({
+        width: { size: 9360, type: WidthType.DXA },
+        columnWidths: [2800, 6560],
+        rows: [
+          new TableRow({
+            children: [
+              new TableCell({
+                borders,
+                width: { size: 2800, type: WidthType.DXA },
+                shading: { fill: MID_BLUE, type: ShadingType.CLEAR },
+                margins: { top: 120, bottom: 120, left: 160, right: 120 },
+                verticalAlign: VerticalAlign.CENTER,
+                children: [new Paragraph({
+                  children: [new TextRun({ text: "ARB RECOMMENDATION", bold: true, color: WHITE, size: 22, font: "Arial" })]
+                })]
+              }),
+              recCell("CONDITIONALLY APPROVED – Pending Data Governance Review Completion")
+            ]
+          })
+        ]
+      }),
+
+      new Paragraph({ children: [new TextRun({ text: "" })] }),
+
+      // === SUMMARY ===
+      new Table({
+        width: { size: 9360, type: WidthType.DXA },
+        columnWidths: [2800, 6560],
+        rows: [
+          sectionHeaderRow("Executive Summary", 9360),
+          new TableRow({
+            children: [
+              new TableCell({
+                borders,
+                columnSpan: 2,
+                width: { size: 9360, type: WidthType.DXA },
+                shading: { fill: WHITE, type: ShadingType.CLEAR },
+                margins: { top: 100, bottom: 100, left: 160, right: 120 },
+                children: [
+                  vp("Content2Classroom (C2C) is a cloud-based, standards-aligned K-12 educational publishing platform developed by Gibbs Smith Education. It enables curriculum creators, teachers, and students to develop, deliver, and interact with digital instructional content. For GCPS, C2C will serve as the rostering and delivery platform for The Georgia Journey, the 8th grade Social Studies instructional resource, supporting approximately 14,500 students, 250 teachers, and up to 10 ISC curriculum staff."),
+                  vp(""),
+                  vp("The platform is hosted on AWS GovCloud (West) and supports OAuth 2.0-based SSO and OneRoster-based provisioning, both of which align well with GCPS infrastructure practices. The application does not connect to on-premises GCPS infrastructure, reducing integration risk. Data is classified as Restricted/Confidential due to the presence of student data, and the vendor maintains compliance with FERPA and ISO 27001 frameworks. However, GCPS Data Governance review has not yet been completed, which is a required step before full approval."),
+                  vp(""),
+                  vp("Based on the information provided, C2C is architecturally sound for GCPS deployment, but formal ARB approval is conditioned on successful Data Governance review completion prior to the July 1, 2026 go-live date.")
+                ]
+              })
+            ]
+          })
+        ]
+      }),
+
+      new Paragraph({ children: [new TextRun({ text: "" })] }),
+
+      // === ASSESSMENT DETAILS TABLE ===
+      new Paragraph({
+        heading: HeadingLevel.HEADING_1,
+        children: [new TextRun({ text: "Assessment Details", bold: true, size: 32, font: "Arial", color: DARK_BLUE })]
+      }),
+
+      new Table({
+        width: { size: 9360, type: WidthType.DXA },
+        columnWidths: [2800, 6560],
+        rows: [
+
+          // --- Functionality & Purpose ---
+          sectionHeaderRow("1. Functionality & Purpose", 9360),
+          row2("System Summary", [
+            vp("Content2Classroom is an end-to-end, standards-aligned K-12 educational publishing platform. It enables curriculum developers and editors to author, manage, and distribute interactive digital instructional content, while teachers and students engage with that content through an integrated delivery interface. For GCPS, C2C will serve specifically as the platform for The Georgia Journey 8th grade Social Studies resource."),
+          ]),
+          row2("Alignment with GCPS Needs", [
+            vp("C2C addresses GCPS's need for a standards-based, interactive curriculum delivery system for 8th grade Social Studies. The platform supports multiple user roles (students, teachers, administrators), integrates with existing GCPS systems via OneRoster, and has a planned go-live date of July 1, 2026, aligning with the next academic year. The platform's scalability and cloud-based design support GCPS's growth trajectory."),
+          ], ALT_ROW),
+
+          // --- User Capacity ---
+          sectionHeaderRow("2. User Capacity & Usage", 9360),
+          row2("Intended GCPS Users", [
+            vbp("Approximately 14,500 eighth-grade students"),
+            vbp("Approximately 250 eighth-grade teachers"),
+            vbp("5–10 ISC Curriculum Staff"),
+            vbp("Total: approximately 14,750–14,760 users"),
+          ]),
+          row2("Maximum Users Supported", [
+            vp("Source documents did not specify a vendor-stated maximum user capacity ceiling.")
+          ], ALT_ROW),
+          row2("Capacity Assessment", [
+            vp("The ARB Business Owner Questionnaire estimates a peak daily usage of up to 13,000 concurrent users. While the vendor did not explicitly publish a maximum capacity figure, the platform's hosting on AWS GovCloud with cloud-native, auto-scaling capabilities suggests it can accommodate the projected GCPS load. Formal capacity confirmation from the vendor is recommended prior to go-live.")
+          ]),
+
+          // --- Criticality & Current Solutions ---
+          sectionHeaderRow("3. Criticality & Current Solutions", 9360),
+          row2("System Criticality", [
+            vp("Moderate to High. C2C is the designated delivery platform for The Georgia Journey, a required 8th grade Social Studies instructional resource. Unavailability of the platform would directly impact classroom instruction for approximately 14,500 students. However, the scope is limited to a single grade level and subject area, constraining the blast radius of any outage.")
+          ]),
+          row2("Current Solution Limitations", [
+            vp("Source documents did not specify the existing solution or describe explicit limitations that C2C is intended to address. The request implies there is currently no comparable digital delivery platform for this specific resource.")
+          ], ALT_ROW),
+
+          // --- Technical Architecture ---
+          sectionHeaderRow("4. Technical Architecture", 9360),
+          row2("Overall Architecture", [
+            vbp("Deployment model: SaaS (Software as a Service)"),
+            vbp("Access method: Web browser-based (no mobile app or thick client required)"),
+            vbp("User provisioning: OneRoster API integration"),
+            vbp("Authentication: OAuth 2.0 (SSO-capable)"),
+            vbp("Credential storage: Hashed credentials stored in AWS GovCloud"),
+          ]),
+          row2("Database Systems", [
+            vp("Source documents did not specify the underlying database technology.")
+          ], ALT_ROW),
+
+          // --- Hosting & Infrastructure ---
+          sectionHeaderRow("5. Hosting & Infrastructure", 9360),
+          row2("Hosting Platform", [
+            vbp("Cloud Provider: Amazon Web Services (AWS)"),
+            vbp("Region: AWS GovCloud (West) – all production workloads confirmed within the United States"),
+          ]),
+          row2("Multi-Region / HA", [
+            vp("Source documents did not explicitly confirm multi-region deployment or availability zone configurations. Given the GovCloud hosting, HA is expected but should be confirmed with the vendor during due diligence.")
+          ], ALT_ROW),
+          row2("Availability Zones", [
+            vp("Source documents did not specify availability zone utilization. AWS GovCloud supports multi-AZ configurations; confirmation is recommended.")
+          ]),
+
+          // --- Disaster Recovery ---
+          sectionHeaderRow("6. Disaster Recovery & Business Continuity", 9360),
+          row2("DR Capabilities", [
+            vp("The vendor references their SOC 2 documentation for DR/BCP details. A copy of the SOC 2 report was noted as optional supporting material but was not included in the documents reviewed for this assessment.")
+          ]),
+          row2("RTO / RPO", [
+            vp("Source documents did not specify RTO or RPO targets. These should be obtained from the vendor's SOC 2 report or supplemental documentation.")
+          ], ALT_ROW),
+          row2("DR Testing Frequency", [
+            vp("Source documents did not specify. Recommend requesting this information from the vendor's SOC 2 Type II report.")
+          ]),
+
+          // --- Integrations ---
+          sectionHeaderRow("7. Integrations", 9360),
+          row2("Integration Methods", [
+            vbp("OAuth 2.0 – for Single Sign-On and authentication"),
+            vbp("OneRoster API – for user provisioning and roster synchronization"),
+            vbp("CSV export – most data can be exported in CSV format"),
+            vbp("REST APIs – available for data extraction"),
+          ]),
+          row2("GCPS System Integrations", [
+            vp("The application integrates with GCPS identity/directory services via OAuth 2.0 for SSO, and uses OneRoster for roster provisioning. No other GCPS system integrations were identified.")
+          ], ALT_ROW),
+          row2("Pre-Built Integrations", [
+            vp("OneRoster is a widely adopted ed-tech standard for HR and SIS integration. The vendor supports this natively, which aligns with common GCPS and state-level educational system interoperability requirements.")
+          ]),
+
+          // --- Security & Authentication ---
+          sectionHeaderRow("8. Security & Authentication", 9360),
+          row2("Authentication Methods", [
+            vbp("SSO: Supported (Yes)"),
+            vbp("Protocol: OAuth 2.0"),
+            vbp("SAML 2.0 and OpenID Connect: Not indicated as supported"),
+            vbp("Credential management: Hashed credentials stored in AWS GovCloud; MFA and password policy enforcement capability not explicitly confirmed"),
+          ]),
+          row2("Data Encryption", [
+            vbp("At Rest: Yes (confirmed)"),
+            vbp("In Transit: Yes (confirmed)"),
+            vbp("Encryption standards/algorithms: Source documents did not specify (e.g., AES-256, TLS 1.2+)"),
+          ], ALT_ROW),
+          row2("Security Certifications", [
+            vbp("FERPA: Compliant"),
+            vbp("ISO 27001: Certified"),
+            vbp("SOC 2: Referenced (report not provided for review)"),
+            vbp("HIPAA / PCI DSS: Not applicable / not selected"),
+          ]),
+
+          // --- Data Management ---
+          sectionHeaderRow("9. Data Management", 9360),
+          row2("Data Storage & Residency", [
+            vp("All data is stored within the United States on AWS GovCloud (West). This satisfies GCPS and FERPA data residency requirements for student data remaining within U.S. jurisdiction.")
+          ]),
+          row2("Backup & Retention Policy", [
+            vp("Upon district demand, data will be deleted within 30 days of contract termination or request. The vendor references their SOC 2 documentation for detailed backup and retention procedures.")
+          ], ALT_ROW),
+          row2("Student Data", [
+            vp("Yes. The application ingests and stores student data, including roster information (names, grade level, school, teacher assignments). Data is classified as Restricted/Confidential. FERPA compliance is indicated. GCPS Data Governance review has not yet been completed (status: not indicated as in-progress or approved).")
+          ]),
+
+          // --- Performance & Scalability ---
+          sectionHeaderRow("10. Performance & Scalability", 9360),
+          row2("Response Times", [
+            vp("Source documents did not specify average response time benchmarks for standard user functions.")
+          ]),
+          row2("Scaling Approach", [
+            vp("The platform is hosted on AWS GovCloud, which provides elastic, cloud-native auto-scaling capabilities. No specific scaling configuration details were provided in the source documents.")
+          ], ALT_ROW),
+          row2("Scale to GCPS Student Population", [
+            vp("The intended deployment is scoped to approximately 14,500 8th grade students, not the full 180,000-student GCPS population. The platform is not intended to serve all GCPS students at this time. Confirmation of capacity to handle peak concurrent usage of up to 13,000 users per day should be formally documented by the vendor prior to go-live.")
+          ]),
+
+          // --- SLA ---
+          sectionHeaderRow("11. Service Level Agreement (SLA)", 9360),
+          row2("Guaranteed Uptime", [
+            vp("Source documents did not specify guaranteed uptime percentage. The vendor references SOC 2 documentation for operational commitments. GCPS should request the formal SLA document, including uptime guarantees, from the vendor.")
+          ]),
+          row2("SLA Exclusions", [
+            vp("Source documents did not specify SLA exclusions (e.g., scheduled maintenance windows). This should be confirmed in the vendor contract.")
+          ], ALT_ROW),
+
+          // --- Monitoring & Reporting ---
+          sectionHeaderRow("12. Monitoring & Reporting", 9360),
+          row2("Monitoring Capabilities", [
+            vp("Source documents did not detail the vendor's built-in monitoring stack. As a SaaS application, platform-level monitoring is managed by the vendor.")
+          ]),
+          row2("Custom Monitoring / Dynatrace", [
+            vp("Source documents did not confirm compatibility with third-party monitoring tools such as Dynatrace. Given the SaaS model with no GCPS infrastructure integration, direct Dynatrace instrumentation of the vendor's platform is unlikely. Synthetic monitoring or API-based availability checks may be feasible. GCPS should inquire with the vendor about available monitoring hooks or webhooks.")
+          ], ALT_ROW),
+          row2("Reporting & Auditing", [
+            vp("Data exports are available in CSV format. REST APIs are available for data extraction, which could support custom audit reporting. Source documents did not enumerate specific built-in report types.")
+          ]),
+
+          // --- Exit Strategy ---
+          sectionHeaderRow("13. Exit Strategy", 9360),
+          row2("Data Retrieval on Termination", [
+            vbp("Data can be exported in CSV format"),
+            vbp("REST APIs are available for structured data extraction"),
+            vbp("GCPS should formalize data retrieval procedures in the contract prior to execution"),
+          ]),
+          row2("Data Retention After Termination", [
+            vp("Data will be deleted within 30 days of a formal request or demand by the district following contract termination.")
+          ], ALT_ROW),
+
+          // --- Compliance ---
+          sectionHeaderRow("14. Compliance", 9360),
+          row2("Regulatory Compliance", [
+            vbp("FERPA: Compliant – required given student data processing"),
+            vbp("ISO 27001: Certified – provides a recognized framework for information security management"),
+            vbp("SOC 2: Referenced – report not provided; Type II report should be requested and reviewed"),
+            vbp("GCPS Data Governance Review: NOT YET COMPLETED – this is a required prerequisite for full ARB approval"),
+            vbp("HIPAA / PCI DSS: Not applicable to this deployment"),
+          ]),
+
+          // --- Support & Maintenance ---
+          sectionHeaderRow("15. Support & Maintenance", 9360),
+          row2("Vendor Support", [
+            vp("Source documents did not detail support tiers, response SLAs, or support channels (e.g., phone, email, ticketing). This information should be obtained from the vendor contract and service agreement.")
+          ]),
+          row2("Updates & Patches", [
+            vp("As a SaaS platform, updates and patches are managed by the vendor. Source documents did not specify the update cadence, maintenance window policies, or customer notification procedures for major releases.")
+          ], ALT_ROW),
+
+          // --- Cost & Licensing ---
+          sectionHeaderRow("16. Cost & Licensing", 9360),
+          row2("Pricing Model", [
+            vp("Source documents did not specify the pricing model (e.g., per-user, site license, tiered). This information should be confirmed with the business owner and documented prior to contract execution.")
+          ]),
+          row2("Additional Costs", [
+            vp("Source documents did not specify whether there are additional costs for features, integrations, or support tiers. GCPS should request an itemized pricing schedule from the vendor.")
+          ], ALT_ROW),
+        ]
+      }),
+
+      new Paragraph({ children: [new TextRun({ text: "" })] }),
+      new Paragraph({ children: [new TextRun({ text: "" })] }),
+
+      // === FINDINGS & CONDITIONS TABLE ===
+      new Paragraph({
+        heading: HeadingLevel.HEADING_1,
+        children: [new TextRun({ text: "Findings & Conditions for Approval", bold: true, size: 32, font: "Arial", color: DARK_BLUE })]
+      }),
+
+      new Table({
+        width: { size: 9360, type: WidthType.DXA },
+        columnWidths: [500, 3400, 5460],
+        rows: [
+          // Header row
+          new TableRow({
+            children: [
+              new TableCell({
+                borders, width: { size: 500, type: WidthType.DXA },
+                shading: { fill: HEADER_BG, type: ShadingType.CLEAR },
+                margins: { top: 80, bottom: 80, left: 120, right: 80 },
+                children: [new Paragraph({ children: [new TextRun({ text: "#", bold: true, color: WHITE, size: 20, font: "Arial" })] })]
+              }),
+              new TableCell({
+                borders, width: { size: 3400, type: WidthType.DXA },
+                shading: { fill: HEADER_BG, type: ShadingType.CLEAR },
+                margins: { top: 80, bottom: 80, left: 120, right: 80 },
+                children: [new Paragraph({ children: [new TextRun({ text: "Finding", bold: true, color: WHITE, size: 20, font: "Arial" })] })]
+              }),
+              new TableCell({
+                borders, width: { size: 5460, type: WidthType.DXA },
+                shading: { fill: HEADER_BG, type: ShadingType.CLEAR },
+                margins: { top: 80, bottom: 80, left: 120, right: 80 },
+                children: [new Paragraph({ children: [new TextRun({ text: "Required Action / Condition", bold: true, color: WHITE, size: 20, font: "Arial" })] })]
+              }),
+            ]
+          }),
+          // Findings rows
+          ...[
+            ["1", "Data Governance Review Incomplete", "GCPS Data Governance review must be completed and approved prior to go-live (July 1, 2026). This is a hard prerequisite for full ARB approval."],
+            ["2", "SOC 2 Report Not Provided", "Vendor must provide the SOC 2 Type II report for review. RTO/RPO and DR testing frequency must be extracted from this document."],
+            ["3", "SLA Not Documented", "Formal SLA including uptime guarantee, exclusions, and support response times must be obtained and reviewed."],
+            ["4", "Max Capacity Not Specified", "Vendor must provide documented capacity confirmation supporting peak concurrent usage of up to 13,000 users per day."],
+            ["5", "MFA Capability Unclear", "Confirm whether administrators can enforce MFA and password policies within the platform."],
+            ["6", "Pricing Model Not Documented", "Business owner must document pricing model and confirm no unanticipated costs before contract execution."],
+            ["7", "Dynatrace Compatibility Unknown", "Explore options for monitoring availability via synthetic checks or vendor-provided webhooks. Confirm with vendor."],
+          ].map(([num, finding, action], i) => new TableRow({
+            children: [
+              new TableCell({
+                borders, width: { size: 500, type: WidthType.DXA },
+                shading: { fill: i % 2 === 0 ? WHITE : ALT_ROW, type: ShadingType.CLEAR },
+                margins: { top: 80, bottom: 80, left: 120, right: 80 },
+                verticalAlign: VerticalAlign.CENTER,
+                children: [new Paragraph({ children: [new TextRun({ text: num, size: 20, font: "Arial" })] })]
+              }),
+              new TableCell({
+                borders, width: { size: 3400, type: WidthType.DXA },
+                shading: { fill: i % 2 === 0 ? WHITE : ALT_ROW, type: ShadingType.CLEAR },
+                margins: { top: 80, bottom: 80, left: 120, right: 80 },
+                children: [new Paragraph({ children: [new TextRun({ text: finding, bold: true, size: 20, font: "Arial" })] })]
+              }),
+              new TableCell({
+                borders, width: { size: 5460, type: WidthType.DXA },
+                shading: { fill: i % 2 === 0 ? WHITE : ALT_ROW, type: ShadingType.CLEAR },
+                margins: { top: 80, bottom: 80, left: 120, right: 80 },
+                children: [new Paragraph({ children: [new TextRun({ text: action, size: 20, font: "Arial" })] })]
+              }),
+            ]
+          }))
+        ]
+      }),
+
+      new Paragraph({ children: [new TextRun({ text: "" })] }),
+      new Paragraph({ children: [new TextRun({ text: "" })] }),
+
+      // Final signature line
+      new Paragraph({
+        border: { top: { style: BorderStyle.SINGLE, size: 6, color: MID_BLUE } },
+        children: [new TextRun({ text: "Prepared by: Michael Rogers, Enterprise Architect  |  GCPS – Information & Technology Services  |  " + TODAY, size: 18, font: "Arial", color: "666666" })]
+      }),
+
+    ]
+  }]
+});
+
+Packer.toBuffer(doc).then(buffer => {
+  fs.writeFileSync("/home/claude/Content2Classroom_Architectural_Assessment.docx", buffer);
+  console.log("Done.");
+});
