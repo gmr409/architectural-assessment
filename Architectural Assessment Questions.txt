@@ -1,0 +1,83 @@
+
+Architectural Assessment Questions
+Based on information contained in the attached documents, act as an enterprise architect who is serving on an architectural review board of the IT organization that supports Gwinnett County Public Schools (GCPS), a large school district in GA. Answer the following questions based on information contained in the attached documents and make a recommendation whether or not the given system meets architectural review criteria and give reasons for your conclusions. Here are the review questions:   
+
+0. Business Owner Information
+* What is the business owner's name?
+* What is the business owner's job title?
+* What is the business owner's department or school
+* What is the business owner's email address?
+* What is the business owner's phone number?
+
+1. Functionality and Purpose:
+* Create a concise summary of the functionality of the proposed system. Do not use any numbered lists and make the summary short and concise using language that would be easy to understand for both technical and non-technical people.
+* How does it align with GCPS's current needs and future growth?
+
+2. User Capacity and Usage:
+* How many GCPS users is the system intended to serve?
+* What is the maximum number of users the system can support?
+* Based on the information in the attached documents, can the system support the projected number of GCPS  users?
+ 
+3. Criticality and Current Solutions:
+* How critical is this system to GCPS's operations?
+* What are the limitations of the current solution, if any?
+ 
+4. Technical Architecture:
+* What is the overall architecture of the system (e.g., web-based, cloud computing)?
+* What database systems does it use?
+ 
+5. Hosting and Infrastructure:
+* Where is the system hosted?
+* Does it use multiple regions for improved availability?
+* How are availability zones utilized?
+ 
+6. Disaster Recovery and Business Continuity:
+* What are the disaster recovery capabilities?
+* What are the Recovery Time Objective (RTO) and Recovery Point Objective (RPO)?
+* How frequently is disaster recovery testing performed?
+ 
+7. Integrations:
+* What integration methods does the system support?
+* What GCPS systems does the application or service integrate with or connect to, if any?
+* Are there pre-built integrations with common HR and educational systems?
+ 
+8. Security and Authentication:
+* What authentication methods are supported (e.g., SSO, SAML)?
+* How is data encrypted at rest and in transit?
+* What security certifications and standards does the system comply with?
+ 
+9. Data Management:
+* Where is data stored, and are there any data residency requirements?
+* What is the process for data backup and retention?
+* Does the application or service ingest, store, modify, or in any other way affect GCPS student data?
+ 
+10. Performance and Scalability:
+* What are the average response times for standard user functions?
+* How does the system handle scaling for increased load?
+* If the application or service handles student data, can it scale to GCPS's size, 180,000 students?
+ 
+11. Service Level Agreement (SLA):
+* What is the guaranteed uptime?
+* Are there exclusions to the SLA (e.g., scheduled maintenance)?
+ 
+12. Monitoring and Reporting:
+* What monitoring capabilities are provided?
+* Can the organization use its own monitoring tools?
+* Is there compatibility with Dynatrace?
+* What types of reports are available for system auditing?
+
+13. Exit Strategy:
+* What is the process for data retrieval if the contract is terminated?
+* How long is data retained after contract termination?
+ 
+14. Compliance:
+* Does the system meet relevant educational and data protection regulations?
+ 
+15. Support and Maintenance:
+* What level of support is provided by the vendor?
+* How are updates and patches managed?
+
+16. Cost and Licensing:
+* What is the pricing model (e.g., per user, tiered)?
+* Are there additional costs for specific features or integrations?
+
